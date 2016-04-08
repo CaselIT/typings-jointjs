@@ -2,9 +2,9 @@
 // Project: http://www.jointjs.com/
 // Definitions by: Federico Caselli <http://github.com/CaselIT>
 
-declare var g: any;
-declare var V: any;
 declare namespace joint {
+  export var g: any;
+  export var V: any;
   namespace dia {
     interface Size {
       width: number;
