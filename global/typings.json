@@ -1,0 +1,12 @@
+{
+  "name": "jointjs",
+  "main": "index.d.ts",
+  "homepage": "https://github.com/clientIO/joint",
+  "version": "0.9.7",
+  "ambient": true,
+  "ambientDependencies": {
+    "backbone-global": "registry:dt/backbone-global#1.0.0+20160326162532",
+    "jquery": "registry:dt/jquery#1.10.0+20160316155526",
+    "lodash": "registry:dt/lodash#3.10.0+20160330154726"
+  }
+}
