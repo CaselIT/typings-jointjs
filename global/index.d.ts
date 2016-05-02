@@ -207,6 +207,8 @@ declare namespace joint {
       guard?: (evt: Event, view: CellView) => boolean;
       multiLinks?: boolean;
       cellViewNamespace?: Object;
+      /** useful undocumented option */
+      clickThreshold?: number;
     }
 
     interface ScaleContentOptions {
