@@ -373,7 +373,7 @@ declare namespace joint {
     export function imageToDataUri(url: string, callback: (err: Error, dataUri: string) => void): void;
 
     // Not documented but used in examples
-    export function deepSupplement(objects: any[], defaultIndicator?: any): any;
+    export function deepSupplement(objects: any, defaultIndicator?: any): any;
 
     // Private functions
     export function mixin(objects: any[]): any;

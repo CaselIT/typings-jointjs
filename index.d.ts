@@ -209,6 +209,8 @@ declare namespace joint {
       guard?: (evt: Event, view: CellView) => boolean;
       multiLinks?: boolean;
       cellViewNamespace?: Object;
+      /** useful undocumented option */
+      clickThreshold?: number;
     }
 
     interface ScaleContentOptions {
@@ -405,6 +407,5 @@ declare namespace joint {
       static layout(graph: dia.Graph, options?: LayoutOptions): LayoutResult;
     }
   }
-
 }
 export = joint;
