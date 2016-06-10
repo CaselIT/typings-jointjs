@@ -123,7 +123,7 @@ declare namespace joint {
       embed(cell: Cell): this;
       unembed(cell: Cell): this;
       getEmbeddedCells(options?: ExploreOptions): Cell[];
-      fitEmbeds(options?: { deep?: boolean, padding?: Padding });
+      fitEmbeds(options?: { deep?: boolean, padding?: Padding }): this;
       getBBox(): BBox;
       findView(paper: Paper): ElementView;
 
@@ -251,7 +251,7 @@ declare namespace joint {
       fitToContent(options?: FitToContentOptions): void;
       scaleContentToFit(options?: ScaleContentOptions): void;
       getContentBBox(): BBox;
-      clientToLocalPoint(p: Point);
+      clientToLocalPoint(p: Point): Point;
 
       rotate(deg: number, ox?: number, oy?: number): Paper;      // @todo not released yet though it's in the source code already
     }
@@ -369,7 +369,7 @@ declare namespace joint {
     export function getElementBBox(el: Element): dia.BBox;
     export function setAttributesBySelector(el: Element, attrs: dia.SVGAttributes): void;
     export function sortElements(elements: Element[] | string | JQuery, comparator: (a: Element, b: Element) => number): Element[];
-    export function shapePerimeterConnectionPoint(linkView: dia.LinkView, ElementView, magnet: SVGElement, ref: dia.Point): dia.Point;
+    export function shapePerimeterConnectionPoint(linkView: dia.LinkView, view: dia.ElementView, magnet: SVGElement, ref: dia.Point): dia.Point;
     export function imageToDataUri(url: string, callback: (err: Error, dataUri: string) => void): void;
 
     // Not documented but used in examples
