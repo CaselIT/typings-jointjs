@@ -92,12 +92,12 @@ declare namespace joint {
       toBack(options?: { deep?: boolean }): this;
       getAncestors(): Cell[];
       isEmbeddedIn(element: Element, options?: { deep: boolean }): boolean;
-      prop(object: any): this;
       prop(key: string): any;
+      prop(object: any): this;
       prop(key: string, value: any): this;
       removeProp(path: string, options?: any): this;
-      attr(object: SVGAttributes): this;
       attr(key: string): any;
+      attr(object: SVGAttributes): this;
       attr(key: string, value: any): this;
       clone(): Cell;
       clone(opt: { deep?: boolean }): Cell | Cell[];
