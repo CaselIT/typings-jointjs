@@ -1,10 +1,12 @@
-// Type definitions for Joint JS 0.9.7
+// Type definitions for Joint JS 0.9.10
 // Project: http://www.jointjs.com/
 // Definitions by: Federico Caselli <http://github.com/CaselIT>
 
 declare namespace joint {
+
   export var g: any;
   export var V: any;
+
   namespace dia {
     interface Size {
       width: number;
@@ -53,13 +55,13 @@ declare namespace joint {
       getFirstCell(): Cell;
       getLastCell(): Cell;
       getConnectedLinks(element: Cell, options?: { inbound?: boolean, outbound?: boolean, deep?: boolean }): Link[];
-      disconnectLinks(cell: Cell): void;
-      removeLinks(cell: Cell): void;
-      translate(tx: number, ty?: number, options?: TranslateOptions): void
+      disconnectLinks(cell: Cell, options?: any): void;
+      removeLinks(cell: Cell, options?: any): void;
+      translate(tx: number, ty?: number, options?: TranslateOptions): void;
       cloneCells(cells: Cell[]): { [id: string]: Cell };
       getSubgraph(cells: Cell[], options?: { deep?: boolean }): Cell[];
       cloneSubgraph(cells: Cell[], options?: { deep?: boolean }): { [id: string]: Cell };
-      dfs(element: Element, iteratee: (element: Element, distance: number) => boolean, options?: DfsBfsOptions): void;
+      dfs(element: Element, iteratee: (element: Element, distance: number) => boolean, options?: DfsBfsOptions, visited?: Object, distance?: number): void;
       bfs(element: Element, iteratee: (element: Element, distance: number) => boolean, options?: DfsBfsOptions): void;
       search(element: Element, iteratee: (element: Element, distance: number) => boolean, options?: { breadthFirst?: boolean }): void;
       getSuccessors(element: Element, options?: ExploreOptions): Element[];
@@ -78,8 +80,20 @@ declare namespace joint {
       clear(options?: any): this;
       findModelsFromPoint(rect: BBox): Element[];
       findModelsUnderElement(element: Element, options?: { searchBy?: 'bbox' | 'center' | 'origin' | 'corner' | 'topRight' | 'bottomLeft' }): Element[];
-      getBBox(elements: Element[]): BBox;
+      getBBox(elements: Element[], options?: any): BBox;
       toGraphLib(): any; // graphlib graph object
+      findModelsInArea(rect: BBox, options?: any): BBox|boolean;
+      getCellsBBox(cells: Cell[], options?: any): BBox;
+      getInboundEdges(node: string): Object;
+      getOutboundEdges(node: string): Object;
+      hasActiveBatch(name?: string): number|boolean;
+      maxZIndex(): number;
+      removeCells(cells: Cell[], options?: any): this;
+      resize(width: number, height: number, options?: number): this;
+      resizeCells(width: number, height: number, cells: Cell[], options?: number): this;
+      set(key: Object|string, value: any, options?: any): this;
+      startBatch(name: string, data?: Object): any;
+      stopBatch(name: string, data?: Object): any;
     }
 
     class Cell extends Backbone.Model {
@@ -92,7 +106,7 @@ declare namespace joint {
       isEmbeddedIn(element: Element, options?: { deep: boolean }): boolean;
       prop(key: string): any;
       prop(object: any): this;
-      prop(key: string, value: any): this;
+      prop(key: string, value: any, options?: any): this;
       removeProp(path: string, options?: any): this;
       attr(key: string): any;
       attr(object: SVGAttributes): this;
@@ -100,11 +114,21 @@ declare namespace joint {
       clone(): Cell;
       clone(opt: { deep?: boolean }): Cell | Cell[];
       removeAttr(path: string | string[], options?: any): this;
-      transition(path: string, value?: any, options?: TransitionOptions): number;
+      transition(path: string, value?: any, options?: TransitionOptions, delim?: string): number;
       getTransitions(): string[];
-      stopTransitions(path?: string): this;
-      addTo(graph: Graph): this;
+      stopTransitions(path?: string, delim?: string): this;
+      addTo(graph: Graph, options?: any): this;
       isLink(): boolean;
+      embed(cell: Cell, options?: any): this;
+      findView(paper: Paper): CellView;
+      getEmbeddedCells(options?: any): Cell[];
+      initialize(options?: any): void;
+      isElement(): boolean;
+      isEmbedded(): boolean;
+      processPorts(): void;
+      startBatch(name: string, options?: any): this;
+      stopBatch(name: string, options?: any): this;
+      unembed(cell: Cell, options?: any): this;
     }
 
     type Padding = number | {
@@ -124,10 +148,10 @@ declare namespace joint {
       unembed(cell: Cell): this;
       getEmbeddedCells(options?: ExploreOptions): Cell[];
       fitEmbeds(options?: { deep?: boolean, padding?: Padding }): this;
-      getBBox(): BBox;
+      getBBox(options?: any): BBox;
       findView(paper: Paper): ElementView;
-
-      rotate(angle: number, absolute: boolean, origin: Point): this; // @todo Documented in source but not released 
+      isElement(): boolean;
+      scale(scaleX: number, scaleY: number, origin?: Point, options?: any): this;
     }
 
     interface CSSSelector {
@@ -163,16 +187,27 @@ declare namespace joint {
     }
 
     class Link extends Cell {
+      markup: string;
+      labelMarkup: string;
+      toolMakup: string;
+      vertexMarkup: string;
+      arrowHeadMarkup: string;
+
       constructor(attributes?: LinkAttributes, options?: Object);
-      remove(): this;
       disconnect(): this;
-      label(index?: number): any
+      label(index?: number): any;
       label(index: number, value: Label): this;
-      reparent(): Element;
+      reparent(options?: any): Element;
       findView(paper: Paper): LinkView;
       getSourceElement(): Element;
       getTargetElement(): Element;
       hasLoop(options?: { deep?: boolean }): boolean;
+      applyToPoints(fn: Function, options?: any): this;
+      getRelationshipAncestor(): Element;
+      isLink(): boolean;
+      isRelationshipEmbeddedIn(element: Element): boolean;
+      scale(sx: number, sy: number, origin: Point, optionts?: any): this;
+      translate(tx: number, ty: number, options?: any): this;
     }
 
     interface ManhattanRouterArgs {
@@ -183,6 +218,7 @@ declare namespace joint {
     }
 
     interface PaperOptions extends Backbone.ViewOptions<Graph> {
+      el?: string|JQuery|HTMLElement;
       width?: number;
       height?: number;
       origin?: Point;
@@ -254,28 +290,114 @@ declare namespace joint {
       clientToLocalPoint(p: Point): Point;
 
       rotate(deg: number, ox?: number, oy?: number): Paper;      // @todo not released yet though it's in the source code already
+
+      afterRenderViews(): void;
+      asyncRenderViews(cells: Cell[], options?: any): void;
+      beforeRenderViews(cells: Cell[]): Cell[];
+      cellMouseout(evt: Event): void;
+      cellMouseover(evt: Event): void;
+      clearGrid(): this;
+      contextmenu(evt: Event): void;
+      createViewForModel(cell: Cell): CellView;
+      drawGrid(options?: any): this;
+      fitToContent(gridWidth?: number, gridHeight?: number, padding?: number, options?: any): void;
+      getArea(): BBox;
+      getDefaultLink(cellView: CellView, magnet: HTMLElement): Link;
+      getModelById(id: string): Cell;
+      getRestrictedArea(): BBox;
+      guard(evt: Event, view: CellView): boolean;
+      linkAllowed(linkViewOrModel: LinkView|Link): boolean;
+      mouseclick(evt: Event): void;
+      mousedblclick(evt: Event): void;
+      mousewheel(evt: Event): void;
+      onCellAdded(cell: Cell, graph: Graph, options: Object): void;
+      onCellHighlight(cellView: CellView, magnetEl: HTMLElement, options?: any): void;
+      onCellUnhighlight(cellView: CellView, magnetEl: HTMLElement, options?: any): void;
+      onRemove(): void;
+      pointerdown(evt: Event): void;
+      pointermove(evt: Event): void;
+      pointerup(evt: Event): void;
+      remove(): this;
+      removeView(cell: Cell): CellView;
+      removeViews(): void;
+      renderView(cell: Cell): CellView;
+      resetViews(cellsCollection: Cell[], options: any): void;
+      resolveHighlighter(options?: any): boolean|Object;
+      setGridSize(gridSize: number): this;
+      setInteractivity(value: any): void;
+      snapToGrid(p: Point): Point;
+      sortViews(): void;
     }
 
 
+    interface GradientOptions {
+      type: 'linearGradient'|'radialGradient';
+      stops: Array<{
+        offset: string;
+        color: string;
+        opacity?: number;
+      }>;
+    }
     class CellViewGeneric<T extends Backbone.Model> extends Backbone.View<T> {
       getBBox(options?: { useModelGeometry?: boolean }): BBox;
-      highlight(el?: any): this;
-      unhighlight(el?: any): this;
-
-      // Private methods
-      // findMagnet(el: any): void;
-      // getSelector(el: any): void;
-      // pointerdblclick(evt: any, x: number, y: number): void;
-      // pointerclick(evt: any, x: number, y: number): void;
-      // pointerdown(evt: any, x: number, y: number): void;
-      // pointermove(evt: any, x: number, y: number): void;
-      // pointerup(evt: any, x: number, y: number): void;
+      highlight(el?: any, options?: any): this;
+      unhighlight(el?: any, options?: any): this;
+      applyFilter(selector: string|HTMLElement, filter: Object): void;
+      applyGradient(selector: string|HTMLElement, attr: 'fill'|'stroke', gradient: GradientOptions): void;
+      can(feature: string): boolean;
+      findBySelector(selector: string): JQuery;
+      findMagnet(el: any): HTMLElement;
+      getSelector(el: HTMLElement, prevSelector: string): string;
+      getStrokeBBox(el: any): BBox; // string|HTMLElement|Vectorizer
+      mouseout(evt: Event): void;
+      mouseover(evt: Event): void;
+      mousewheel(evt: Event, x: number, y: number, delta: number): void
+      notify(eventName: string): void;
+      onChangeAttrs(cell: Cell, attrs: Backbone.ViewOptions<T>, options?: any): this;
+      onSetTheme(oldTheme: string, newTheme: string): void;
+      pointerclick(evt: Event, x: number, y: number): void;
+      pointerdblclick(evt: Event, x: number, y: number): void;
+      pointerdown(evt: Event, x: number, y: number): void;
+      pointermove(evt: Event, x: number, y: number): void;
+      pointerup(evt: Event, x: number, y: number): void;
+      remove(): this;
+      setInteractivity(value: any): void;
+      setTheme(theme: string, options?: any): this;
     }
 
     class CellView extends CellViewGeneric<Cell> { }
 
+    interface ElementViewAttributes {
+      style?: string;
+      text?: string;
+      html?: string;
+      "ref-x"?: string|number;
+      "ref-y"?: string|number;
+      "ref-dx"?: number;
+      "ref-dy"?: number;
+      "ref-width"?: string|number;
+      "ref-height"?: string|number;
+      ref?: string;
+      "x-alignment"?: 'middle'|'right'|number;
+      "y-alignment"?: 'middle'|'bottom'|number;
+      port?: string;
+    }
     class ElementView extends CellViewGeneric<Element> {
-      scale(sx: number, sy: number): void; // @todo Documented in source but not released 
+      scale(sx: number, sy: number): void; // @todo Documented in source but not released
+      finalizeEmbedding(options?: any): void;
+      getBBox(options?: any): BBox;
+      pointerdown(evt: Event, x: number, y: number): void;
+      pointermove(evt: Event, x: number, y: number): void;
+      pointerup(evt: Event, x: number, y: number): void;
+      positionRelative(vel: any, bbox: BBox, attributes: ElementViewAttributes, nodesBySelector?: Object): void; // Vectorizer
+      prepareEmbedding(options?: any): void;
+      processEmbedding(options?: any): void;
+      render(): this;
+      renderMarkup(): void;
+      resize(): void;
+      rotate(): void;
+      translate(model: Backbone.Model, changes?: any, options?: any): void;
+      update(cell: Cell, renderingOnlyAttrs?: Object): void;
     }
 
     class LinkView extends CellViewGeneric<Link> {
@@ -285,13 +407,40 @@ declare namespace joint {
         longLinkLength?: number,
         linkToolsOffset?: number,
         doubleLinkToolsOffset?: number,
+        sampleInterval: number
       };
       getConnectionLength(): number;
       sendToken(token: SVGElement, duration?: number, callback?: () => void): void;
       addVertex(vertex: Point): number;
-      getPointAtLength(length: number): Point; // Marked as public api in soruce but not in the documents
+      getPointAtLength(length: number): Point; // Marked as public api in source but not in the documents
+      createWatcher(endType: {id: string}): Function;
+      findRoute(oldVertices: Point[]): Point[];
+      getConnectionPoint(end: 'source'|'target', selectorOrPoint: Element|Point, referenceSelectorOrPoint: Element|Point): Point;
+      getPathData(vertices: Point[]): any;
+      onEndModelChange(endType: 'source'|'target', endModel?: Element, opt?: any): void;
+      onLabelsChange(): void;
+      onSourceChange(cell: Cell, sourceEnd: {id: string}, options: any): void;
+      onTargetChange(cell: Cell, targetEnd: {id: string}, options: any): void;
+      onToolsChange(): void;
+      onVerticesChange(cell: Cell, changed: any, options: any): void;
+      pointerdown(evt: Event, x: number, y: number): void;
+      pointermove(evt: Event, x: number, y: number): void;
+      pointerup(evt: Event, x: number, y: number): void;
+      removeVertex(idx: number): this;
+      render(): this;
+      renderArrowheadMarkers(): this;
+      renderLabels(): this;
+      renderTools(): this;
+      renderVertexMarkers(): this;
+      startArrowheadMove(end: 'source'|'target', options?: any): void;
+      startListening(): void;
+      update(model: any, attributes: any, options?: any): this;
+      updateArrowheadMarkers(): this;
+      updateAttributes(): void;
+      updateConnection(options?: any): void;
+      updateLabelPositions(): this;
+      updateToolsPosition(): this;
     }
-
   }
 
   namespace ui { }
