@@ -1,4 +1,4 @@
-// Type definitions for Joint JS 0.9.10
+// Type definitions for Joint JS 1.0.1
 // Project: http://www.jointjs.com/
 // Definitions by: Federico Caselli <http://github.com/CaselIT>
 
@@ -522,11 +522,15 @@ declare namespace joint {
     export function imageToDataUri(url: string, callback: (err: Error, dataUri: string) => void): void;
 
     // Not documented but used in examples
+    /** @deprecated use lodash _.defaultsDeep */
     export function deepSupplement(objects: any, defaultIndicator?: any): any;
 
     // Private functions
+    /** @deprecated use lodash _.assign */
     export function mixin(objects: any[]): any;
+    /** @deprecated use lodash _.defaults */
     export function supplement(objects: any[]): any;
+    /** @deprecated use lodash _.mixin  */
     export function deepMixin(objects: any[]): any;
   }
 
@@ -544,14 +548,8 @@ declare namespace joint {
       setLinkVertices?: (link: dia.Link, vertices: Position[]) => void;
     }
 
-    interface LayoutResult extends dia.Size {
-      rankdir: 'TB' | 'BT' | 'LR' | 'RL';
-      nodesep: number;
-      edgesep: number;
-    }
-
     class DirectedGraph {
-      static layout(graph: dia.Graph, options?: LayoutOptions): LayoutResult;
+      static layout(graph: dia.Graph, options?: LayoutOptions): dia.BBox;
     }
   }
 }
